@@ -26,22 +26,23 @@ def parse_directory(file_list):
         file_ext = file_ext.lower()
 
         pattern = r"\.(fasta|fastq)(\.gz)?$"
-        if re.search(pattern,file_name,re.IGNORECASE):
-            paired_file = None
-            unpaired_file = None
+        if re.search(pattern, file_name, re.IGNORECASE):
+            R1_file = None
+            R2_file = None
             sample_name = None
 
             if "_R1" in file_name:
                 sample_name = file_name.rsplit("_R1", 1)[0]
-                paired_file = file_path.replace("_R1", "_R2") + file_ext
-                unpaired_file = file
+                R2_file = file_path.replace("_R1", "_R2") + file_ext
+                R1_file = file
             elif "_R2" in file_name:
                 sample_name = file_name.rsplit("_R2", 1)[0]
-                unpaired_file = file_path.replace("_R2", "_R1") + file_ext
-                paired_file = file
-
-            if paired_file and paired_file in file_list:
-                paired_files.add((sample_name, unpaired_file, paired_file))
+                R1_file = file_path.replace("_R2", "_R1") + file_ext
+                R2_file = file
+            else:
+                unpaired_files.add((sample_name, file))
+            if R1_file and R2_file and R1_file in file_list and R2_file in file_list:
+                paired_files.add((sample_name, R1_file, R2_file))
             else:
                 unpaired_files.add((sample_name, file))
 
@@ -58,7 +59,6 @@ def parse_tsv_file(file_path):
         tuple: A tuple containing two lists:
             - paired_reads: A list of tuples with the sample name, R1 file, and R2 file (if available).
             - unpaired_reads: A list of tuples with the sample name and R1 file (for unpaired reads).
-
     """
 
     paired_reads = set()
@@ -123,8 +123,10 @@ def convert_to_dictionary(paired_reads, unpaired_reads):
         unpaired_reads (set): A list of tuples with sample name and R1 file (for unpaired reads).
 
     Returns:
-        dict: A dictionary containing the sample name as the key and a dictionary with 'R1' and 'R2' keys.
-
+        dict:
+            - sample name (dict):
+                - R1 (str): filepath of R1 reads file
+                - R2 (str): filepath of R2 reads file or None for unpaired
     """
 
     reads_dictionary = {}
@@ -161,15 +163,11 @@ def write_samples_tsv(dictionary, output_file):
     """Write the samples dictionary to a TSV file
 
     Args:
-        dictionary (dict):
-             - key (str): sample name
-             - value (dict):
-                - R1 (str): filepath of R1 file
-                - R2 (str): filepath of R2 file, or None for unpaired reads
+        dictionary:
+            - sample name (dict):
+                - R1 (str): filepath of R1 reads file
+                - R2 (str): filepath of R2 reads file or None for unpaired
         output_file (str): filepath of output file for writing
-
-    Returns:
-
     """
 
     with open(output_file, "w") as out:
