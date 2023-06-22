@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/static/v1?label=Licence&message=MIT&color=black)](https://opensource.org/license/mit/)
 [![install with PyPI](https://img.shields.io/badge/Install%20with-PyPI-brightgreen.svg?style=flat-square)](https://pypi.org/project/metasnek/)
+[![Unit Tests](https://github.com/beardymcjohnface/metasnek/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/beardymcjohnface/metasnek/actions/workflows/unit-tests.yml)
 [![codecov](https://codecov.io/gh/beardymcjohnface/metasnek/branch/main/graph/badge.svg?token=lCyqJhuiCN)](https://codecov.io/gh/beardymcjohnface/metasnek)
 
 Misc functions for metagenomic pipelines
@@ -17,7 +18,7 @@ __samples.tsv__
 ```text
 sample1     reads/sample1_R1.fastq.gz   reads/sample1_R2.fastq.gz
 sample2     reads/sample1_R2.fastq      reads/sample2_R2.fastq
-sample3     reads/sample3.fasta.gz
+sample3     reads/sample3.fasta.gz      None
 ```
 
 __reads/__
