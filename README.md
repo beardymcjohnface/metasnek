@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/static/v1?label=Licence&message=MIT&color=black)](https://opensource.org/license/mit/)
 [![install with PyPI](https://img.shields.io/badge/Install%20with-PyPI-brightgreen.svg?style=flat-square)](https://pypi.org/project/metasnek/)
+[![codecov](https://codecov.io/gh/beardymcjohnface/metasnek/branch/main/graph/badge.svg?token=lCyqJhuiCN)](https://codecov.io/gh/beardymcjohnface/metasnek)
 
 Misc functions for metagenomic pipelines
 
