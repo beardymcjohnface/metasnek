@@ -1,4 +1,4 @@
-site_name: MetaSnek API
+site_name: MetaSnek
 
 theme:
     name: readthedocs
@@ -13,4 +13,4 @@ plugins:
                   show_root_heading: false
 
 nav:
-  - metasnek API: index.md
+  - MetaSnekAPI: index.md
