@@ -20,9 +20,9 @@ CLASSIFIERS = [
     "Natural Language :: English",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
@@ -30,7 +30,7 @@ CLASSIFIERS = [
 setup(
     name="metasnek",
     url="https://github.com/beardymcjohnface/metasnek",
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     description="Misc functions for metagenomics pipelines",
     long_description=get_description(),
     long_description_content_type="text/markdown",
