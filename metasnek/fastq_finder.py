@@ -76,7 +76,7 @@ def parse_tsv_file(file_path):
             if not os.path.isfile(r1_file):
                 raise FileNotFoundError(f"R1 file '{r1_file}' does not exist.")
 
-            if r2_file and not os.path.isfile(r2_file):
+            if r2_file and not os.path.isfile(r2_file) and not r2_file.lower() in ["none", "null"]:
                 raise FileNotFoundError(f"R2 file '{r2_file}' does not exist.")
 
             if r2_file:
@@ -172,4 +172,7 @@ def write_samples_tsv(dictionary, output_file):
 
     with open(output_file, "w") as out:
         for sample in dictionary.keys():
-            out.write(f"{sample}\t{dictionary[sample]['R1']}\t{dictionary[sample]['R2']}\n")
+            if dictionary[sample]['R2'] is not None:
+                out.write(f"{sample}\t{dictionary[sample]['R1']}\t{dictionary[sample]['R2']}\n")
+            else:
+                out.write(f"{sample}\t{dictionary[sample]['R1']}\n")
