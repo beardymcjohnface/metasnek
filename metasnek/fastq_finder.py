@@ -172,7 +172,7 @@ def write_samples_tsv(dictionary, output_file):
 
     with open(output_file, "w") as out:
         for sample in dictionary.keys():
-            if dictionary[sample]['R2'] is not None:
+            if dictionary[sample]['R2'] is not None and dictionary[sample]['R2'].lower() not in ["none", "null"]:
                 out.write(f"{sample}\t{dictionary[sample]['R1']}\t{dictionary[sample]['R2']}\n")
             else:
                 out.write(f"{sample}\t{dictionary[sample]['R1']}\n")

@@ -226,10 +226,10 @@ def test_write_samples_tsv(temp_directory):
     expected_content = (
         "sample1\t" + os.path.join(temp_directory, "sample1_R1.fastq") + "\t" + os.path.join(temp_directory, "sample1_R2.fastq") + "\n"
         "sample2\t" + os.path.join(temp_directory, "sample2_R1_001.fastq.gz") + "\t" + os.path.join(temp_directory, "sample2_R2_001.fastq.gz") + "\n"
-        "sample3\t" + os.path.join(temp_directory, "sample3.fastq") + "\tNone\n"
-        "sample4_R2\t" + os.path.join(temp_directory, "sample4_R2.fastq") + "\tNone\n"
-        "sample5\t" + os.path.join(temp_directory, "sample5.fasta.gz") + "\tNone\n"
-        "sample6\t" + os.path.join(temp_directory, "sample6.fastq.gz") + "\tNone\n"
+        "sample3\t" + os.path.join(temp_directory, "sample3.fastq") + "\n"
+        "sample4_R2\t" + os.path.join(temp_directory, "sample4_R2.fastq") + "\n"
+        "sample5\t" + os.path.join(temp_directory, "sample5.fasta.gz") + "\n"
+        "sample6\t" + os.path.join(temp_directory, "sample6.fastq.gz") + "\n"
     )
 
     assert content == expected_content
