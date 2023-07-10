@@ -43,7 +43,7 @@ def parse_directory(file_list):
             else:
                 sample_name = re.split(r"\.(fasta|fastq)(\.gz)?$", file_name)[0]
                 if "_R1" in sample_name or "_R2" in sample_name:
-                    warnings.warn(f"Orphaned paired read detected: {file_name}", Warning)
+                    warnings.warn("Orphaned paired read detected for " + file_name, Warning)
                 unpaired_files.add((sample_name, file))
 
     return paired_files, unpaired_files
@@ -172,7 +172,9 @@ def write_samples_tsv(dictionary, output_file):
 
     with open(output_file, "w") as out:
         for sample in dictionary.keys():
-            if dictionary[sample]['R2'] is not None and dictionary[sample]['R2'].lower() not in ["none", "null"]:
+            if "R2" in dictionary[sample].keys() \
+                    and dictionary[sample]['R2'] is not None \
+                    and dictionary[sample]['R2'].lower() not in ["none", "null"]:
                 out.write(f"{sample}\t{dictionary[sample]['R1']}\t{dictionary[sample]['R2']}\n")
             else:
                 out.write(f"{sample}\t{dictionary[sample]['R1']}\n")
