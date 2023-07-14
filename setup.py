@@ -30,7 +30,7 @@ CLASSIFIERS = [
 setup(
     name="metasnek",
     url="https://github.com/beardymcjohnface/metasnek",
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     description="Misc functions for metagenomics pipelines",
     long_description=get_description(),
     long_description_content_type="text/markdown",

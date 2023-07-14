@@ -33,31 +33,41 @@ def parse_directory(file_list):
             if "_R1" in file_name:
                 sample_name = file_name.rsplit("_R1", 1)[0]
                 R2_file = file_path.replace("_R1", "_R2") + file_ext
+                S_file = file_path.replace("_R1", "_S") + file_ext
                 R1_file = file
             elif "_R2" in file_name:
                 sample_name = file_name.rsplit("_R2", 1)[0]
                 R1_file = file_path.replace("_R2", "_R1") + file_ext
+                S_file = file_path.replace("_R2", "_S") + file_ext
                 R2_file = file
+            elif "_S" in file_name:
+                sample_name = file_name.rsplit("_S", 1)[0]
+                R1_file = file_path.replace("_S", "_R1") + file_ext
+                R2_file = file_path.replace("_S", "_R2") + file_ext
+                S_file = file
             if R1_file and R2_file and R1_file in file_list and R2_file in file_list:
-                paired_files.add((sample_name, R1_file, R2_file))
+                if S_file and S_file in file_list:
+                    paired_files.add((sample_name, R1_file, R2_file, S_file))
+                else:
+                    paired_files.add((sample_name, R1_file, R2_file, None))
             else:
                 sample_name = re.split(r"\.(fasta|fastq)(\.gz)?$", file_name)[0]
                 if "_R1" in sample_name or "_R2" in sample_name:
-                    warnings.warn(f"Orphaned paired read detected: {file_name}", Warning)
+                    warnings.warn("Orphaned paired read detected for " + file_name, Warning)
                 unpaired_files.add((sample_name, file))
 
     return paired_files, unpaired_files
 
 
 def parse_tsv_file(file_path):
-    """Parses a 3-column TSV file of sample names and sequencing reads (column 3 is optional)
+    """Parses a 2-4 column TSV file of sample names and sequencing reads (column 3/4 is optional)
 
     Args:
         file_path (str): Path to the TSV file.
 
     Returns:
         tuple: A tuple containing two lists:
-            - paired_reads: A list of tuples with the sample name, R1 file, and R2 file (if available).
+            - paired_reads: A list of tuples with the sample name, R1 file, R2 file, and singleton file.
             - unpaired_reads: A list of tuples with the sample name and R1 file (for unpaired reads).
     """
 
@@ -72,6 +82,7 @@ def parse_tsv_file(file_path):
             sample_name = row[0].strip()
             r1_file = row[1].strip()
             r2_file = row[2].strip() if len(row) >= 3 else None
+            s_file = row[3].strip() if len(row) >= 4 else None
 
             if not os.path.isfile(r1_file):
                 raise FileNotFoundError(f"R1 file '{r1_file}' does not exist.")
@@ -79,8 +90,11 @@ def parse_tsv_file(file_path):
             if r2_file and not os.path.isfile(r2_file) and not r2_file.lower() in ["none", "null"]:
                 raise FileNotFoundError(f"R2 file '{r2_file}' does not exist.")
 
+            if s_file and not os.path.isfile(s_file) and not s_file.lower() in ["none", "null"]:
+                raise FileNotFoundError(f"S file '{s_file}' does not exist.")
+
             if r2_file:
-                paired_reads.add((sample_name, r1_file, r2_file))
+                paired_reads.add((sample_name, r1_file, r2_file, s_file))
             else:
                 unpaired_reads.add((sample_name, r1_file))
 
@@ -131,13 +145,13 @@ def convert_to_dictionary(paired_reads, unpaired_reads):
 
     reads_dictionary = {}
 
-    for sample_name, r1_file, r2_file in paired_reads:
+    for sample_name, r1_file, r2_file, s_file in paired_reads:
         if sample_name not in reads_dictionary:
-            reads_dictionary[sample_name] = {'R1': r1_file, 'R2': r2_file}
+            reads_dictionary[sample_name] = {'R1': r1_file, 'R2': r2_file, 'S': s_file}
 
     for sample_name, r1_file in unpaired_reads:
         if sample_name not in reads_dictionary:
-            reads_dictionary[sample_name] = {'R1': r1_file, 'R2': None}
+            reads_dictionary[sample_name] = {'R1': r1_file, 'R2': None, 'S': None}
 
     return reads_dictionary
 
@@ -153,6 +167,7 @@ def parse_samples_to_dictionary(input_file_or_directory):
             - sample name (dict):
                 - R1 (str): filepath of R1 reads file
                 - R2 (str): filepath of R2 reads file or None for unpaired
+                - S (str): filepath of singleton reads file or None
     """
     paired, unpaired = parse_samples(input_file_or_directory)
     sample_dictionary = convert_to_dictionary(paired, unpaired)
@@ -166,13 +181,20 @@ def write_samples_tsv(dictionary, output_file):
         dictionary:
             - sample name (dict):
                 - R1 (str): filepath of R1 reads file
-                - R2 (str): filepath of R2 reads file or None for unpaired
+                - R2 (str): filepath of R2 reads file or None
+                - S (str): filepath of singleton reads file or None
         output_file (str): filepath of output file for writing
     """
 
     with open(output_file, "w") as out:
         for sample in dictionary.keys():
-            if dictionary[sample]['R2'] is not None and dictionary[sample]['R2'].lower() not in ["none", "null"]:
-                out.write(f"{sample}\t{dictionary[sample]['R1']}\t{dictionary[sample]['R2']}\n")
-            else:
-                out.write(f"{sample}\t{dictionary[sample]['R1']}\n")
+            out.write(f"{sample}\t{dictionary[sample]['R1']}")
+            if "R2" in dictionary[sample].keys() \
+                    and dictionary[sample]['R2'] is not None \
+                    and dictionary[sample]['R2'].lower() not in ["none", "null"]:
+                out.write(f"\t{dictionary[sample]['R2']}")
+                if "S" in dictionary[sample].keys() \
+                        and dictionary[sample]['S'] is not None \
+                        and dictionary[sample]['S'].lower() not in ["none", "null"]:
+                    out.write(f"\t{dictionary[sample]['S']}")
+            out.write("\n")
