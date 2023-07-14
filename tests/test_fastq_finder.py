@@ -25,6 +25,7 @@ def file_list(temp_directory):
         os.path.join(str(temp_directory), "sample1_R2.fastq"),
         os.path.join(str(temp_directory), "sample2_R1_001.fastq.gz"),
         os.path.join(str(temp_directory), "sample2_R2_001.fastq.gz"),
+        os.path.join(str(temp_directory), "sample2_S_001.fastq.gz"),
         os.path.join(str(temp_directory), "sample3.fastq"),
         os.path.join(str(temp_directory), "sample4_R2.fastq"),
         os.path.join(str(temp_directory), "sample5.fasta.gz"),
@@ -39,11 +40,16 @@ def file_list(temp_directory):
 
 def assert_parsed_files(paired_files, unpaired_files, temp_directory):
     # Assert paired files
-    assert ("sample1", os.path.join(str(temp_directory), "sample1_R1.fastq"), os.path.join(str(temp_directory), "sample1_R2.fastq")) in paired_files
+    assert ("sample1",
+            os.path.join(str(temp_directory), "sample1_R1.fastq"),
+            os.path.join(str(temp_directory), "sample1_R2.fastq"),
+            None
+            ) in paired_files
     assert (
         "sample2",
         os.path.join(str(temp_directory), "sample2_R1_001.fastq.gz"),
         os.path.join(str(temp_directory), "sample2_R2_001.fastq.gz"),
+        os.path.join(str(temp_directory), "sample2_S_001.fastq.gz"),
     ) in paired_files
     # Assert unpaired files
     assert ("sample3", os.path.join(str(temp_directory), "sample3.fastq")) in unpaired_files
@@ -67,6 +73,8 @@ def create_sample_tsv(temp_directory, file_list):
             + os.path.join(str(temp_directory), "sample2_R1_001.fastq.gz")
             + "\t"
             + os.path.join(str(temp_directory), "sample2_R2_001.fastq.gz")
+            + "\t"
+            + os.path.join(str(temp_directory), "sample2_S_001.fastq.gz")
             + "\n"
             "sample3\t" + os.path.join(str(temp_directory), "sample3.fastq") + "\n"
             "sample4_R2\t"
@@ -148,14 +156,15 @@ def test_parse_samples(temp_directory, create_sample_tsv):
 
 
 def test_convert_to_dictionary():
-    paired_reads = {("sample1", "sample1_R1.fastq", "sample1_R2.fastq"), ("sample2", "sample2_R1.fastq", "sample2_R2.fastq")}
+    paired_reads = {("sample1", "sample1_R1.fastq", "sample1_R2.fastq", None),
+                    ("sample2", "sample2_R1.fastq", "sample2_R2.fastq", "sample2_S.fastq")}
     unpaired_reads = {("sample3", "sample3_R1.fastq"), ("sample4", "sample4_R1.fastq")}
 
     expected_dictionary = {
-        "sample1": {"R1": "sample1_R1.fastq", "R2": "sample1_R2.fastq"},
-        "sample2": {"R1": "sample2_R1.fastq", "R2": "sample2_R2.fastq"},
-        "sample3": {"R1": "sample3_R1.fastq", "R2": None},
-        "sample4": {"R1": "sample4_R1.fastq", "R2": None},
+        "sample1": {"R1": "sample1_R1.fastq", "R2": "sample1_R2.fastq", "S": None},
+        "sample2": {"R1": "sample2_R1.fastq", "R2": "sample2_R2.fastq", "S": "sample2_S.fastq"},
+        "sample3": {"R1": "sample3_R1.fastq", "R2": None, "S": None},
+        "sample4": {"R1": "sample4_R1.fastq", "R2": None, "S": None},
     }
 
     assert convert_to_dictionary(paired_reads, unpaired_reads) == expected_dictionary
@@ -165,24 +174,42 @@ def test_convert_to_dictionary():
 def test_parse_samples_to_dictionary(temp_directory, create_sample_tsv):
     # Test parsing a directory
     directory_dictionary = {
-        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"), "R2": os.path.join(temp_directory, "sample1_R2.fastq")},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"), "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz")},
-        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"), "R2": None},
-        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None},
-        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None},
-        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"), "R2": None},
+        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"),
+                    "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
+                    "S": None},
+        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
+                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
+                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
+        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"),
+                    "R2": None,
+                    "S": None},
+        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"),
+                       "R2": None,
+                       "S": None},
+        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"),
+                    "R2": None,
+                    "S": None},
+        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"),
+                    "R2": None,
+                    "S": None},
     }
 
     assert parse_samples_to_dictionary(temp_directory) == directory_dictionary
 
     # Test parsing a TSV file
     tsv_dictionary = {
-        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"), "R2": os.path.join(temp_directory, "sample1_R2.fastq")},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"), "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz")},
-        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"), "R2": None},
-        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None},
-        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None},
-        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"), "R2": None},
+        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"),
+                    "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
+                    "S": None},
+        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
+                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
+                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
+        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"),
+                    "R2": None,
+                    "S": None},
+        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None, "S": None},
+        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None, "S": None},
+        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"), "R2": None, "S": None},
     }
 
     assert parse_samples_to_dictionary(create_sample_tsv) == tsv_dictionary
@@ -210,7 +237,9 @@ def test_parse_samples_to_dictionary(temp_directory, create_sample_tsv):
 def test_write_samples_tsv(temp_directory):
     samples_dictionary = {
         "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"), "R2": os.path.join(temp_directory, "sample1_R2.fastq")},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"), "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz")},
+        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
+                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
+                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
         "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"), "R2": None},
         "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None},
         "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None},
@@ -225,7 +254,9 @@ def test_write_samples_tsv(temp_directory):
 
     expected_content = (
         "sample1\t" + os.path.join(temp_directory, "sample1_R1.fastq") + "\t" + os.path.join(temp_directory, "sample1_R2.fastq") + "\n"
-        "sample2\t" + os.path.join(temp_directory, "sample2_R1_001.fastq.gz") + "\t" + os.path.join(temp_directory, "sample2_R2_001.fastq.gz") + "\n"
+        "sample2\t" + os.path.join(temp_directory, "sample2_R1_001.fastq.gz") +
+        "\t" + os.path.join(temp_directory, "sample2_R2_001.fastq.gz") +
+        "\t" + os.path.join(temp_directory, "sample2_S_001.fastq.gz") + "\n"
         "sample3\t" + os.path.join(temp_directory, "sample3.fastq") + "\n"
         "sample4_R2\t" + os.path.join(temp_directory, "sample4_R2.fastq") + "\n"
         "sample5\t" + os.path.join(temp_directory, "sample5.fasta.gz") + "\n"
