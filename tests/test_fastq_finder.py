@@ -2,7 +2,14 @@ import os
 import warnings
 import pytest
 import shutil
-from metasnek.fastq_finder import parse_directory, parse_tsv_file, parse_samples, convert_to_dictionary, parse_samples_to_dictionary, write_samples_tsv
+from metasnek.fastq_finder import (
+    parse_directory,
+    parse_tsv_file,
+    parse_samples,
+    convert_to_dictionary,
+    parse_samples_to_dictionary,
+    write_samples_tsv,
+)
 
 
 @pytest.fixture(scope="session")
@@ -30,6 +37,12 @@ def file_list(temp_directory):
         os.path.join(str(temp_directory), "sample4_R2.fastq"),
         os.path.join(str(temp_directory), "sample5.fasta.gz"),
         os.path.join(str(temp_directory), "sample6.fastq.gz"),
+        os.path.join(str(temp_directory), "sample7.R1.fastq"),
+        os.path.join(str(temp_directory), "sample7.R2.fastq"),
+        os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ"),
+        os.path.join(str(temp_directory), "sample8_2.FASTQ.GZ"),
+        os.path.join(str(temp_directory), "sample9.1.001.fq.gz"),
+        os.path.join(str(temp_directory), "sample9.2.001.fq.gz"),
     ]
 
     for file_path in _file_list:
@@ -40,22 +53,53 @@ def file_list(temp_directory):
 
 def assert_parsed_files(paired_files, unpaired_files, temp_directory):
     # Assert paired files
-    assert ("sample1",
-            os.path.join(str(temp_directory), "sample1_R1.fastq"),
-            os.path.join(str(temp_directory), "sample1_R2.fastq"),
-            None
-            ) in paired_files
+    assert (
+        "sample1",
+        os.path.join(str(temp_directory), "sample1_R1.fastq"),
+        os.path.join(str(temp_directory), "sample1_R2.fastq"),
+        None,
+    ) in paired_files
     assert (
         "sample2",
         os.path.join(str(temp_directory), "sample2_R1_001.fastq.gz"),
         os.path.join(str(temp_directory), "sample2_R2_001.fastq.gz"),
         os.path.join(str(temp_directory), "sample2_S_001.fastq.gz"),
     ) in paired_files
+    assert (
+        "sample7",
+        os.path.join(str(temp_directory), "sample7.R1.fastq"),
+        os.path.join(str(temp_directory), "sample7.R2.fastq"),
+        None,
+    ) in paired_files
+    assert (
+        "sample8",
+        os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ"),
+        os.path.join(str(temp_directory), "sample8_2.FASTQ.GZ"),
+        None,
+    ) in paired_files
+    assert (
+        "sample9",
+        os.path.join(str(temp_directory), "sample9.1.001.fq.gz"),
+        os.path.join(str(temp_directory), "sample9.2.001.fq.gz"),
+        None,
+    ) in paired_files
     # Assert unpaired files
-    assert ("sample3", os.path.join(str(temp_directory), "sample3.fastq")) in unpaired_files
-    assert ("sample4_R2", os.path.join(str(temp_directory), "sample4_R2.fastq")) in unpaired_files
-    assert ("sample5", os.path.join(str(temp_directory), "sample5.fasta.gz")) in unpaired_files
-    assert ("sample6", os.path.join(str(temp_directory), "sample6.fastq.gz")) in unpaired_files
+    assert (
+        "sample3",
+        os.path.join(str(temp_directory), "sample3.fastq"),
+    ) in unpaired_files
+    assert (
+        "sample4_R2",
+        os.path.join(str(temp_directory), "sample4_R2.fastq"),
+    ) in unpaired_files
+    assert (
+        "sample5",
+        os.path.join(str(temp_directory), "sample5.fasta.gz"),
+    ) in unpaired_files
+    assert (
+        "sample6",
+        os.path.join(str(temp_directory), "sample6.fastq.gz"),
+    ) in unpaired_files
 
 
 @pytest.fixture(scope="session")
@@ -82,9 +126,75 @@ def create_sample_tsv(temp_directory, file_list):
             + "\n"
             "sample5\t" + os.path.join(str(temp_directory), "sample5.fasta.gz") + "\n"
             "sample6\t" + os.path.join(str(temp_directory), "sample6.fastq.gz") + "\n"
+            "sample7\t"
+            + os.path.join(str(temp_directory), "sample7.R1.fastq")
+            + "\t"
+            + os.path.join(str(temp_directory), "sample7.R2.fastq")
+            + "\n"
+            "sample8\t"
+            + os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ")
+            + "\t"
+            + os.path.join(str(temp_directory), "sample8_2.FASTQ.GZ")
+            + "\n"
+            "sample9\t"
+            + os.path.join(str(temp_directory), "sample9.1.001.fq.gz")
+            + "\t"
+            + os.path.join(str(temp_directory), "sample9.2.001.fq.gz")
         )
 
     return tsv_file_path
+
+
+@pytest.fixture(scope="session")
+def expected_dictionary(temp_directory, file_list):
+    directory_dictionary = {
+        "sample1": {
+            "R1": os.path.join(temp_directory, "sample1_R1.fastq"),
+            "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
+            "S": None,
+        },
+        "sample2": {
+            "R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
+            "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
+            "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz"),
+        },
+        "sample3": {
+            "R1": os.path.join(temp_directory, "sample3.fastq"),
+            "R2": None,
+            "S": None,
+        },
+        "sample4_R2": {
+            "R1": os.path.join(temp_directory, "sample4_R2.fastq"),
+            "R2": None,
+            "S": None,
+        },
+        "sample5": {
+            "R1": os.path.join(temp_directory, "sample5.fasta.gz"),
+            "R2": None,
+            "S": None,
+        },
+        "sample6": {
+            "R1": os.path.join(temp_directory, "sample6.fastq.gz"),
+            "R2": None,
+            "S": None,
+        },
+        "sample7": {
+            "R1": os.path.join(str(temp_directory), "sample7.R1.fastq"),
+            "R2": os.path.join(str(temp_directory), "sample7.R2.fastq"),
+            "S": None,
+        },
+        "sample8": {
+            "R1": os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ"),
+            "R2": os.path.join(str(temp_directory), "sample8_2.FASTQ.GZ"),
+            "S": None,
+        },
+        "sample9": {
+            "R1": os.path.join(str(temp_directory), "sample9.1.001.fq.gz"),
+            "R2": os.path.join(str(temp_directory), "sample9.2.001.fq.gz"),
+            "S": None,
+        },
+    }
+    return directory_dictionary
 
 
 @pytest.mark.filterwarnings("ignore:Orphaned paired")
@@ -98,7 +208,9 @@ def test_parse_directory_orphand_r():
     with warnings.catch_warnings(record=True) as warning_list:
         parse_directory(["sample7_R2.fastq"])
         assert len(warning_list) == 1
-        assert "Orphaned paired read detected" in str(warning_list[0].message)
+        assert "Possible orphaned paired read detected for" in str(
+            warning_list[0].message
+        )
 
 
 def test_parse_tsv_file(create_sample_tsv, temp_directory):
@@ -107,7 +219,7 @@ def test_parse_tsv_file(create_sample_tsv, temp_directory):
 
     # Assert file not found error for missing R1 file
     invalid_tsv_file = os.path.join(temp_directory, "invalid_reads.tsv")
-    with open(invalid_tsv_file, 'w') as f:
+    with open(invalid_tsv_file, "w") as f:
         f.write("sample1\tnonexistent_R1.fastq\t")
 
     with pytest.raises(FileNotFoundError):
@@ -115,7 +227,7 @@ def test_parse_tsv_file(create_sample_tsv, temp_directory):
 
     # Assert file not found error for missing R2 file
     invalid_tsv_file = os.path.join(temp_directory, "invalid_reads.tsv")
-    with open(invalid_tsv_file, 'w') as f:
+    with open(invalid_tsv_file, "w") as f:
         f.write(
             "sample1\t"
             + os.path.join(str(temp_directory), "sample1_R1.fastq")
@@ -156,13 +268,19 @@ def test_parse_samples(temp_directory, create_sample_tsv):
 
 
 def test_convert_to_dictionary():
-    paired_reads = {("sample1", "sample1_R1.fastq", "sample1_R2.fastq", None),
-                    ("sample2", "sample2_R1.fastq", "sample2_R2.fastq", "sample2_S.fastq")}
+    paired_reads = {
+        ("sample1", "sample1_R1.fastq", "sample1_R2.fastq", None),
+        ("sample2", "sample2_R1.fastq", "sample2_R2.fastq", "sample2_S.fastq"),
+    }
     unpaired_reads = {("sample3", "sample3_R1.fastq"), ("sample4", "sample4_R1.fastq")}
 
     expected_dictionary = {
         "sample1": {"R1": "sample1_R1.fastq", "R2": "sample1_R2.fastq", "S": None},
-        "sample2": {"R1": "sample2_R1.fastq", "R2": "sample2_R2.fastq", "S": "sample2_S.fastq"},
+        "sample2": {
+            "R1": "sample2_R1.fastq",
+            "R2": "sample2_R2.fastq",
+            "S": "sample2_S.fastq",
+        },
         "sample3": {"R1": "sample3_R1.fastq", "R2": None, "S": None},
         "sample4": {"R1": "sample4_R1.fastq", "R2": None, "S": None},
     }
@@ -171,48 +289,12 @@ def test_convert_to_dictionary():
 
 
 @pytest.mark.filterwarnings("ignore:Orphaned paired")
-def test_parse_samples_to_dictionary(temp_directory, create_sample_tsv):
-    # Test parsing a directory
-    directory_dictionary = {
-        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"),
-                    "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
-                    "S": None},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
-                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
-                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
-        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"),
-                    "R2": None,
-                    "S": None},
-        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"),
-                       "R2": None,
-                       "S": None},
-        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"),
-                    "R2": None,
-                    "S": None},
-        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"),
-                    "R2": None,
-                    "S": None},
-    }
+def test_parse_samples_to_dictionary(
+    temp_directory, create_sample_tsv, expected_dictionary
+):
+    assert parse_samples_to_dictionary(temp_directory) == expected_dictionary
 
-    assert parse_samples_to_dictionary(temp_directory) == directory_dictionary
-
-    # Test parsing a TSV file
-    tsv_dictionary = {
-        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"),
-                    "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
-                    "S": None},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
-                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
-                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
-        "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"),
-                    "R2": None,
-                    "S": None},
-        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None, "S": None},
-        "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None, "S": None},
-        "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"), "R2": None, "S": None},
-    }
-
-    assert parse_samples_to_dictionary(create_sample_tsv) == tsv_dictionary
+    assert parse_samples_to_dictionary(create_sample_tsv) == expected_dictionary
 
     # Test parsing an invalid file or directory
     invalid_path = os.path.join(temp_directory, "nonexistent_file.tsv")
@@ -236,12 +318,20 @@ def test_parse_samples_to_dictionary(temp_directory, create_sample_tsv):
 
 def test_write_samples_tsv(temp_directory):
     samples_dictionary = {
-        "sample1": {"R1": os.path.join(temp_directory, "sample1_R1.fastq"), "R2": os.path.join(temp_directory, "sample1_R2.fastq")},
-        "sample2": {"R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
-                    "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
-                    "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz")},
+        "sample1": {
+            "R1": os.path.join(temp_directory, "sample1_R1.fastq"),
+            "R2": os.path.join(temp_directory, "sample1_R2.fastq"),
+        },
+        "sample2": {
+            "R1": os.path.join(temp_directory, "sample2_R1_001.fastq.gz"),
+            "R2": os.path.join(temp_directory, "sample2_R2_001.fastq.gz"),
+            "S": os.path.join(temp_directory, "sample2_S_001.fastq.gz"),
+        },
         "sample3": {"R1": os.path.join(temp_directory, "sample3.fastq"), "R2": None},
-        "sample4_R2": {"R1": os.path.join(temp_directory, "sample4_R2.fastq"), "R2": None},
+        "sample4_R2": {
+            "R1": os.path.join(temp_directory, "sample4_R2.fastq"),
+            "R2": None,
+        },
         "sample5": {"R1": os.path.join(temp_directory, "sample5.fasta.gz"), "R2": None},
         "sample6": {"R1": os.path.join(temp_directory, "sample6.fastq.gz"), "R2": None},
     }
@@ -253,10 +343,18 @@ def test_write_samples_tsv(temp_directory):
         content = file.read()
 
     expected_content = (
-        "sample1\t" + os.path.join(temp_directory, "sample1_R1.fastq") + "\t" + os.path.join(temp_directory, "sample1_R2.fastq") + "\n"
-        "sample2\t" + os.path.join(temp_directory, "sample2_R1_001.fastq.gz") +
-        "\t" + os.path.join(temp_directory, "sample2_R2_001.fastq.gz") +
-        "\t" + os.path.join(temp_directory, "sample2_S_001.fastq.gz") + "\n"
+        "sample1\t"
+        + os.path.join(temp_directory, "sample1_R1.fastq")
+        + "\t"
+        + os.path.join(temp_directory, "sample1_R2.fastq")
+        + "\n"
+        "sample2\t"
+        + os.path.join(temp_directory, "sample2_R1_001.fastq.gz")
+        + "\t"
+        + os.path.join(temp_directory, "sample2_R2_001.fastq.gz")
+        + "\t"
+        + os.path.join(temp_directory, "sample2_S_001.fastq.gz")
+        + "\n"
         "sample3\t" + os.path.join(temp_directory, "sample3.fastq") + "\n"
         "sample4_R2\t" + os.path.join(temp_directory, "sample4_R2.fastq") + "\n"
         "sample5\t" + os.path.join(temp_directory, "sample5.fasta.gz") + "\n"

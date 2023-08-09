@@ -18,45 +18,44 @@ def parse_directory(file_list):
     """
 
     paired_files = set()
-    unpaired_files = set()
+    out_paired = set()
+    out_unpaired = set()
 
+    ext_pattern = r"\.(fasta|fastq|fq)(\.gz)?$"
+    r1_possible_patterns = ["_R1", ".R1", "_1", ".1"]
+    r2_possible_patterns = ["_R2", ".R2", "_2", ".2"]
+
+    # find paired reads
     for file in file_list:
-        file_path, file_ext = os.path.splitext(file)
         file_name = os.path.basename(file)
-        file_ext = file_ext.lower()
-
-        pattern = r"\.(fasta|fastq)(\.gz)?$"
-        if re.search(pattern, file_name, re.IGNORECASE):
-            R1_file = None
-            R2_file = None
-
-            if "_R1" in file_name:
-                sample_name = file_name.rsplit("_R1", 1)[0]
-                R2_file = file_path.replace("_R1", "_R2") + file_ext
-                S_file = file_path.replace("_R1", "_S") + file_ext
-                R1_file = file
-            elif "_R2" in file_name:
-                sample_name = file_name.rsplit("_R2", 1)[0]
-                R1_file = file_path.replace("_R2", "_R1") + file_ext
-                S_file = file_path.replace("_R2", "_S") + file_ext
-                R2_file = file
-            elif "_S" in file_name:
-                sample_name = file_name.rsplit("_S", 1)[0]
-                R1_file = file_path.replace("_S", "_R1") + file_ext
-                R2_file = file_path.replace("_S", "_R2") + file_ext
-                S_file = file
-            if R1_file and R2_file and R1_file in file_list and R2_file in file_list:
-                if S_file and S_file in file_list:
-                    paired_files.add((sample_name, R1_file, R2_file, S_file))
-                else:
-                    paired_files.add((sample_name, R1_file, R2_file, None))
-            else:
+        if re.search(ext_pattern, file_name, re.IGNORECASE):
+            for r1_pattern in r1_possible_patterns:
+                if r1_pattern in file_name:
+                    sample_name = file_name.rsplit(r1_pattern, 1)[0]
+                    r2_pattern = r1_pattern.replace("1", "2")
+                    s_pattern = re.sub("(R?)1", "S", r1_pattern)
+                    r2_file = file.replace(r1_pattern, r2_pattern)
+                    s_file = file.replace(r1_pattern, s_pattern)
+                    if r2_file in file_list:
+                        paired_files.add(file)
+                        paired_files.add(r2_file)
+                        if s_file in file_list:
+                            paired_files.add(s_file)
+                            out_paired.add((sample_name, file, r2_file, s_file))
+                        else:
+                            out_paired.add((sample_name, file, r2_file, None))
+    # add remaining files as singletons
+    for file in file_list:
+        file_name = os.path.basename(file)
+        if re.search(ext_pattern, file_name, re.IGNORECASE):
+            if file not in paired_files:
                 sample_name = re.split(r"\.(fasta|fastq)(\.gz)?$", file_name)[0]
-                if "_R1" in sample_name or "_R2" in sample_name:
-                    warnings.warn("Orphaned paired read detected for " + file_name, Warning)
-                unpaired_files.add((sample_name, file))
+                for r_pattern in r1_possible_patterns + r2_possible_patterns:
+                    if r_pattern in sample_name:
+                        warnings.warn(f"Possible orphaned paired read detected for {file_name} with tag {r_pattern}", Warning)
+                out_unpaired.add((sample_name, file))
 
-    return paired_files, unpaired_files
+    return out_paired, out_unpaired
 
 
 def parse_tsv_file(file_path):
@@ -177,7 +176,7 @@ def parse_samples_to_dictionary(input_file_or_directory):
 def write_samples_tsv(dictionary, output_file):
     """Write the samples dictionary to a TSV file
 
-    Args:
+    Args:one
         dictionary:
             - sample name (dict):
                 - R1 (str): filepath of R1 reads file
