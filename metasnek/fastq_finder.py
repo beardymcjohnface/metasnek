@@ -33,7 +33,7 @@ def parse_directory(file_list):
                 if r1_pattern in file_name:
                     sample_name = file_name.rsplit(r1_pattern, 1)[0]
                     r2_pattern = r1_pattern.replace("1", "2")
-                    s_pattern = re.sub("(R?)1", "S", r1_pattern)
+                    s_pattern = re.sub("1", "S", r1_pattern)
                     r2_file = file.replace(r1_pattern, r2_pattern)
                     s_file = file.replace(r1_pattern, s_pattern)
                     if r2_file in file_list:
