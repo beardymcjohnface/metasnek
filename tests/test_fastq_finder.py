@@ -37,8 +37,8 @@ def file_list(temp_directory):
         os.path.join(str(temp_directory), "sample4_R2.fastq"),
         os.path.join(str(temp_directory), "sample5.fasta.gz"),
         os.path.join(str(temp_directory), "sample6.fastq.gz"),
-        os.path.join(str(temp_directory), "sample7.R1.fastq"),
-        os.path.join(str(temp_directory), "sample7.R2.fastq"),
+        os.path.join(str(temp_directory), "sample7_1.R1.fastq"),
+        os.path.join(str(temp_directory), "sample7_1.R2.fastq"),
         os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ"),
         os.path.join(str(temp_directory), "sample8_2.FASTQ.GZ"),
         os.path.join(str(temp_directory), "sample9.1.001.fq.gz"),
@@ -66,9 +66,9 @@ def assert_parsed_files(paired_files, unpaired_files, temp_directory):
         os.path.join(str(temp_directory), "sample2_RS_001.fastq.gz"),
     ) in paired_files
     assert (
-        "sample7",
-        os.path.join(str(temp_directory), "sample7.R1.fastq"),
-        os.path.join(str(temp_directory), "sample7.R2.fastq"),
+        "sample7_1",
+        os.path.join(str(temp_directory), "sample7_1.R1.fastq"),
+        os.path.join(str(temp_directory), "sample7_1.R2.fastq"),
         None,
     ) in paired_files
     assert (
@@ -126,10 +126,10 @@ def create_sample_tsv(temp_directory, file_list):
             + "\n"
             "sample5\t" + os.path.join(str(temp_directory), "sample5.fasta.gz") + "\n"
             "sample6\t" + os.path.join(str(temp_directory), "sample6.fastq.gz") + "\n"
-            "sample7\t"
-            + os.path.join(str(temp_directory), "sample7.R1.fastq")
+            "sample7_1\t"
+            + os.path.join(str(temp_directory), "sample7_1.R1.fastq")
             + "\t"
-            + os.path.join(str(temp_directory), "sample7.R2.fastq")
+            + os.path.join(str(temp_directory), "sample7_1.R2.fastq")
             + "\n"
             "sample8\t"
             + os.path.join(str(temp_directory), "sample8_1.FASTQ.GZ")
@@ -178,9 +178,9 @@ def expected_dictionary(temp_directory, file_list):
             "R2": None,
             "S": None,
         },
-        "sample7": {
-            "R1": os.path.join(str(temp_directory), "sample7.R1.fastq"),
-            "R2": os.path.join(str(temp_directory), "sample7.R2.fastq"),
+        "sample7_1": {
+            "R1": os.path.join(str(temp_directory), "sample7_1.R1.fastq"),
+            "R2": os.path.join(str(temp_directory), "sample7_1.R2.fastq"),
             "S": None,
         },
         "sample8": {
