@@ -74,7 +74,7 @@ def parse_fastas(file_or_directory):
                 os.path.splitext(os.path.basename(file_or_directory))[0]
             ] = file_or_directory
         elif file_or_directory.lower().endswith(".tsv"):
-            fasta_files = parse_tsv_fasta(file_or_directory)
+            fasta_files = parse_tsv_file(file_or_directory)
         else:
             print(f"Unsupported file format: {file_or_directory}")
     elif os.path.isdir(file_or_directory):
