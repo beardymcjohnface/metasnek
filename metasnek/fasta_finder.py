@@ -24,7 +24,7 @@ def fastas_from_directory(fasta_directory):
         if file_name.lower().endswith(
             (".fasta", ".fa", ".fna", ".ffn", ".faa", ".frn")
         ):
-            fasta_files[file_name] = os.path.join(fasta_directory, file_path)
+            fasta_files[file_name] = file_path
     return fasta_files
 
 
@@ -63,6 +63,7 @@ def parse_fastas(file_or_directory):
             key (str): file name minus extension
             value (str): filepath
     """
+
     fasta_files = {}
 
     if os.path.isfile(file_or_directory):
@@ -96,6 +97,7 @@ def write_fastas_tsv(fasta_dict, fastas_tsv):
     Returns:
         None
     """
+
     with open(fastas_tsv, "w") as tsv_file:
         for key, value in fasta_dict.items():
             tsv_file.write(f"{key}\t{value}\n")
@@ -114,6 +116,7 @@ def combine_fastas(fasta_dict, fasta_file):
     Returns:
         None
     """
+
     with open(fasta_file, "w") as out_fasta:
         for ref_name, filepath in fasta_dict.items():
             with open(filepath, "r") as in_fasta:
