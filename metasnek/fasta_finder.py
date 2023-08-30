@@ -21,7 +21,9 @@ def fastas_from_directory(fasta_directory):
     file_list = glob.glob(os.path.join(fasta_directory, "*"))
     for file_path in file_list:
         file_name = os.path.basename(file_path)
-        if file_name.lower().endswith(('.fasta', '.fa', '.fna', '.ffn', '.faa', '.frn')):
+        if file_name.lower().endswith(
+            (".fasta", ".fa", ".fna", ".ffn", ".faa", ".frn")
+        ):
             fasta_files[file_name] = os.path.join(fasta_directory, file_path)
     return fasta_files
 
@@ -40,7 +42,7 @@ def parse_tsv_file(file_path):
 
     fasta_files = {}
 
-    with open(file_path, 'r') as tsv_file:
+    with open(file_path, "r") as tsv_file:
         for line in tsv_file:
             l = line.strip().split("\t")
             if len(l) == 2:
@@ -64,9 +66,13 @@ def parse_fastas(file_or_directory):
     fasta_files = {}
 
     if os.path.isfile(file_or_directory):
-        if file_or_directory.lower().endswith(('.fasta', '.fa', '.fna', '.ffn', '.faa', '.frn')):
-            fasta_files[os.path.splitext(os.path.basename(file_or_directory))[0]] = file_or_directory
-        elif file_or_directory.lower().endswith('.tsv'):
+        if file_or_directory.lower().endswith(
+            (".fasta", ".fa", ".fna", ".ffn", ".faa", ".frn")
+        ):
+            fasta_files[
+                os.path.splitext(os.path.basename(file_or_directory))[0]
+            ] = file_or_directory
+        elif file_or_directory.lower().endswith(".tsv"):
             fasta_files = parse_tsv_fasta(file_or_directory)
         else:
             print(f"Unsupported file format: {file_or_directory}")
@@ -90,7 +96,7 @@ def write_fastas_tsv(fasta_dict, fastas_tsv):
     Returns:
         None
     """
-    with open(fastas_tsv, 'w') as tsv_file:
+    with open(fastas_tsv, "w") as tsv_file:
         for key, value in fasta_dict.items():
             tsv_file.write(f"{key}\t{value}\n")
 
@@ -108,9 +114,9 @@ def combine_fastas(fasta_dict, fasta_file):
     Returns:
         None
     """
-    with open(fasta_file, 'w') as out_fasta:
+    with open(fasta_file, "w") as out_fasta:
         for ref_name, filepath in fasta_dict.items():
-            with open(filepath, 'r') as in_fasta:
+            with open(filepath, "r") as in_fasta:
                 for line in in_fasta:
                     if line.startswith(">"):
                         line = line.replace(">", ">" + ref_name + ":")
