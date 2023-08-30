@@ -19,9 +19,10 @@ def fastas_from_directory(fasta_directory):
 
     fasta_files = {}
     file_list = glob.glob(os.path.join(fasta_directory, "*"))
-    for file_name in file_list:
+    for file_path in file_list:
+        file_name = os.path.basename(file_path)
         if file_name.lower().endswith(('.fasta', '.fa', '.fna', '.ffn', '.faa', '.frn')):
-            fasta_files[file_name] = os.path.join(fasta_directory, file_name)
+            fasta_files[file_name] = os.path.join(fasta_directory, file_path)
     return fasta_files
 
 
@@ -63,7 +64,7 @@ def parse_fastas(file_or_directory):
     fasta_files = {}
 
     if os.path.isfile(file_or_directory):
-        if file_or_directory.lower().endswith('.fasta'):
+        if file_or_directory.lower().endswith(('.fasta', '.fa', '.fna', '.ffn', '.faa', '.frn')):
             fasta_files[os.path.splitext(os.path.basename(file_or_directory))[0]] = file_or_directory
         elif file_or_directory.lower().endswith('.tsv'):
             fasta_files = parse_tsv_fasta(file_or_directory)
@@ -111,6 +112,6 @@ def combine_fastas(fasta_dict, fasta_file):
         for ref_name, filepath in fasta_dict.items():
             with open(filepath, 'r') as in_fasta:
                 for line in in_fasta:
-                    if line.beginswith(">"):
+                    if line.startswith(">"):
                         line = line.replace(">", ">" + ref_name + ":")
                     out_fasta.write(line)
