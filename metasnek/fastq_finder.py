@@ -9,7 +9,7 @@ def parse_directory(
     file_list,
     r1_flags=["_R1.", "_R1_", ".R1.", ".R1_", "_1_", "_1.", ".1.", ".1_"],
     r2_flags=["_R2.", "_R2_", ".R2.", ".R2_", "_2_", "_2.", ".2.", ".2_"],
-    ext_pattern=r"\.(fasta|fastq|fq)(\.gz)?$",
+    ext_pattern=r".(fasta|fastq|fq)(.gz)?$",
 ):
     """Pairs samples from a list of files.
 
@@ -17,7 +17,7 @@ def parse_directory(
         file_list (list): A list of file paths
         r1_flags (list): list of string patterns of allowable R1 flags
         r2_flags (list): list of string patterns of allowable R2 flags
-        ext_pattern (str): (raw-)string of regex for matching file extension, eg r"\.(fasta|fastq|fq)(\.gz)?$"
+        ext_pattern (str): (raw-)string of regex for matching file extension, eg ext_pattern=r".(fasta|fastq|fq)(.gz)?$"
 
     Returns:
         tuple: A tuple containing two sets:
@@ -58,18 +58,16 @@ def parse_directory(
                             [fastq_files.remove(f) for f in [file, r2_file]]
 
     # add remaining files as singletons
-    for file in file_list:
+    for file in list(fastq_files):
         file_name = os.path.basename(file)
-        if re.search(ext_pattern, file_name, re.IGNORECASE):
-            if file not in paired_files:
-                sample_name = re.split(ext_pattern, file_name)[0]
-                for r_pattern in r1_flags + r2_flags:
-                    if r_pattern in file_name:
-                        warnings.warn(
-                            f"Possible orphaned paired read detected for {file_name} with tag {r_pattern}",
-                            Warning,
-                        )
-                out_unpaired.add((sample_name, file))
+        sample_name = re.split(ext_pattern, file_name)[0]
+        for r_pattern in r1_flags + r2_flags:
+            if r_pattern in file_name:
+                warnings.warn(
+                    f"Possible orphaned paired read detected for {file_name} with tag {r_pattern}",
+                    Warning,
+                )
+        out_unpaired.add((sample_name, file))
 
     return out_paired, out_unpaired
 
@@ -150,7 +148,7 @@ def parse_samples(input_file_or_directory):
     if len(paired_files) == 0 and len(unpaired_files) == 0:
         raise ValueError(
             f"Failed to detect any reads files and samples for {input_file_or_directory}"
-        )
+        )  # TODO: unit test
 
     return paired_files, unpaired_files
 

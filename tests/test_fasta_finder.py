@@ -75,6 +75,15 @@ def test_parse_tsv_valid_file(tsv_file_path):
     assert parse_tsv_file(tsv_file_path) == expected_output
 
 
+def test_parse_fastas_tsv_valid_file(tsv_file_path):
+    expected_output = {
+        "ref1": "file1.fasta",
+        "ref2": "file2.fasta",
+        "ref3": "file3.fasta",
+    }
+    assert parse_fastas(tsv_file_path) == expected_output
+
+
 def test_parse_tsv_empty_file():
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
         temp_file_path = temp_file.name
