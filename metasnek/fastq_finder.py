@@ -20,38 +20,46 @@ def parse_directory(file_list):
     paired_files = set()
     out_paired = set()
     out_unpaired = set()
+    fastq_files = set()
 
     ext_pattern = r"\.(fasta|fastq|fq)(\.gz)?$"
-    r1_possible_patterns = ["_R1", ".R1", "_1", ".1"]
-    r2_possible_patterns = ["_R2", ".R2", "_2", ".2"]
+    r1_possible_patterns = ["_R1.", "_R1_", ".R1.", ".R1_", "_1_", "_1.", ".1.", ".1_"]
+    r2_possible_patterns = ["_R2.", "_R2_", ".R2.", ".R2_", "_2_", "_2.", ".2.", ".2_"]
 
-    # find paired reads
     for file in file_list:
         file_name = os.path.basename(file)
         if re.search(ext_pattern, file_name, re.IGNORECASE):
-            for r1_pattern in r1_possible_patterns:
+            fastq_files.add(file)
+
+    for r1_pattern in r1_possible_patterns:
+        for file in list(fastq_files):
+            if file in fastq_files:
+                file_name = os.path.basename(file)
                 if r1_pattern in file_name:
                     sample_name = file_name.rsplit(r1_pattern, 1)[0]
                     r2_pattern = r1_pattern.replace("1", "2")
                     s_pattern = re.sub("1", "S", r1_pattern)
                     r2_file = file.replace(r1_pattern, r2_pattern)
                     s_file = file.replace(r1_pattern, s_pattern)
-                    if r2_file in file_list:
+                    if r2_file in fastq_files:
                         paired_files.add(file)
                         paired_files.add(r2_file)
-                        if s_file in file_list:
+                        if s_file in fastq_files:
                             paired_files.add(s_file)
                             out_paired.add((sample_name, file, r2_file, s_file))
+                            [fastq_files.remove(f) for f in [file, r2_file, s_file]]
                         else:
                             out_paired.add((sample_name, file, r2_file, None))
+                            [fastq_files.remove(f) for f in [file, r2_file]]
+
     # add remaining files as singletons
     for file in file_list:
         file_name = os.path.basename(file)
         if re.search(ext_pattern, file_name, re.IGNORECASE):
             if file not in paired_files:
-                sample_name = re.split(r"\.(fasta|fastq)(\.gz)?$", file_name)[0]
+                sample_name = re.split(r"\.(fasta|fastq|fq)(\.gz)?$", file_name)[0]
                 for r_pattern in r1_possible_patterns + r2_possible_patterns:
-                    if r_pattern in sample_name:
+                    if r_pattern in file_name:
                         warnings.warn(f"Possible orphaned paired read detected for {file_name} with tag {r_pattern}", Warning)
                 out_unpaired.add((sample_name, file))
 
