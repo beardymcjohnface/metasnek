@@ -177,6 +177,8 @@ def convert_to_dictionary(paired_reads, unpaired_reads):
         if sample_name not in reads_dictionary:
             reads_dictionary[sample_name] = {"R1": r1_file, "R2": None, "S": None}
 
+    reads_dictionary = dict(sorted(reads_dictionary.items()))
+
     return reads_dictionary
 
 
@@ -193,8 +195,13 @@ def parse_samples_to_dictionary(input_file_or_directory):
                 - R2 (str): filepath of R2 reads file or None for unpaired
                 - S (str): filepath of singleton reads file or None
     """
+
     paired, unpaired = parse_samples(input_file_or_directory)
+
     sample_dictionary = convert_to_dictionary(paired, unpaired)
+
+    sample_dictionary = dict(sorted(sample_dictionary.items()))
+
     return sample_dictionary
 
 
