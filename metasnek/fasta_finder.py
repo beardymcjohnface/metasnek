@@ -18,6 +18,7 @@ def fastas_from_directory(fasta_directory):
     """
 
     fasta_files = {}
+
     file_list = glob.glob(os.path.join(fasta_directory, "*"))
     for file_path in file_list:
         file_name = os.path.basename(file_path)
@@ -25,6 +26,9 @@ def fastas_from_directory(fasta_directory):
             (".fasta", ".fa", ".fna", ".ffn", ".faa", ".frn")
         ):
             fasta_files[file_name] = file_path
+
+    fasta_files = dict(sorted(fasta_files.items()))
+
     return fasta_files
 
 
@@ -47,6 +51,8 @@ def parse_tsv_file(file_path):
             l = line.strip().split("\t")
             if len(l) == 2:
                 fasta_files[l[0]] = l[1]
+
+    fasta_files = dict(sorted(fasta_files.items()))
 
     return fasta_files
 
@@ -83,6 +89,8 @@ def parse_fastas(file_or_directory):
         fasta_files = fastas_from_directory(file_or_directory)
     else:
         print(f"Input not recognized: {file_or_directory}")
+
+    fasta_files = dict(sorted(fasta_files.items()))
 
     return fasta_files
 
